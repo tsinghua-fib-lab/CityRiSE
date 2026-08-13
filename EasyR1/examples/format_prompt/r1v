@@ -1,0 +1,1 @@
+{{ content | trim }} Please reason step-by-step and write your reasoning process inside the <think> </think> tags. Then, format the final answer as <answer>QX</answer>.
