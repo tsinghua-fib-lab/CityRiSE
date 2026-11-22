@@ -11,7 +11,7 @@ def compute_regression_metrics(pred_list, true_list):
     mse = mean_squared_error(true_list, pred_list)
     mae = mean_absolute_error(true_list, pred_list)
     r2 = r2_score(true_list, pred_list)
-    rmse = mean_squared_error(true_list, pred_list, squared=False)
+    rmse = np.sqrt(mse)
     mean_true = sum(true_list) / len(true_list)
     nrmse = rmse / mean_true if mean_true != 0 else None  
     return mse, mae, r2, rmse, nrmse
@@ -141,7 +141,8 @@ def calculate_acc_sft(response_file):
             pred = response
             response_counts[pred] += 1
             
-        is_correct = (float(pred) == float(reference))
+        predicted_rank = extract_float(pred)
+        is_correct = predicted_rank is not None and predicted_rank == extract_float(reference)
         total += 1
         correct += int(is_correct)
 
@@ -194,7 +195,8 @@ def calculate_acc(response_file):
             else:
                 pred = -2
                 format_error += 1
-        is_correct = (float(pred) == float(reference))
+        predicted_rank = extract_float(pred)
+        is_correct = predicted_rank is not None and predicted_rank == extract_float(reference)
         total += 1
         correct += int(is_correct)
 
@@ -250,8 +252,10 @@ if __name__ == "__main__":
 
     if args.training_mode == "rl":
         mse, mae, r2, rmse, nrmse = calculate_r2(response_path)
+        acc = calculate_acc(response_path)
     elif args.training_mode == "sft":
         mse, mae, r2, rmse, nrmse = calculate_r2_sft(response_path)
+        acc = calculate_acc_sft(response_path)
     
     record_metrics(acc, summary_path, args.model_name, args.eval_version, mse, mae, r2, rmse, nrmse)
 
